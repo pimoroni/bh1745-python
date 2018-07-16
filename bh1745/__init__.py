@@ -1,6 +1,6 @@
 from .device import _mask_width, _byte_swap, _leading_zeros, _trailing_zeros, _unmask, _mask, Device, Register, BitField
 
-bh1745 = Device(0x38, bitwidth=8)
+bh1745 = Device([0x38, 0x39], bitwidth=8)
 
 """
 Part ID should be 0b001011 or 0x0B
