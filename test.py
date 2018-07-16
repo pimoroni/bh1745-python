@@ -5,6 +5,12 @@ import RPi.GPIO as GPIO
 #GPIO.setmode(GPIO.BCM)
 #GPIO.setup(4, GPIO.OUT)
 #GPIO.output(4, GPIO.LOW)
+try:
+    l.SYSTEM_CONTROL.get_part_id()
+except IOError:
+    addr = l.bh1745.next_address()
+    print("Trying alternate i2c address: 0x{:02x}".format(addr))
+    l.SYSTEM_CONTROL.get_part_id()
 
 assert l.SYSTEM_CONTROL.get_part_id() == 0b001011
 assert l.MANUFACTURER.get_id() == 0xE0
