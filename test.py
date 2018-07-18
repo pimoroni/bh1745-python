@@ -1,5 +1,5 @@
 import time
-import bh1745 as l
+from bh1745 import _bh1745 as l
 import RPi.GPIO as GPIO
 
 #GPIO.setmode(GPIO.BCM)
@@ -49,13 +49,11 @@ l.INTERRUPT.set_enable(1)
 
 try:
     while True:
-        #l.INTERRUPT.read()
-        #status = l.INTERRUPT.get_status(False)
-        #print("Status: {}".format(status))
-        l.COLOUR_DATA.read()
-        r, g, b, c = l.COLOUR_DATA.get_red(False), l.COLOUR_DATA.get_green(False), l.COLOUR_DATA.get_blue(False), l.COLOUR_DATA.get_clear(False)
+        with l.COLOUR_DATA as COLOUR_DATA:
+            r, g, b, c = COLOUR_DATA.get_red(), COLOUR_DATA.get_green(), COLOUR_DATA.get_blue(), COLOUR_DATA.get_clear()
 
-        #print(r, g, b, c)
+        print(r, g, b, c)
+
         div = max(r, g, b)
 
         if div > 0:
