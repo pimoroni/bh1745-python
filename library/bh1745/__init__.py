@@ -79,6 +79,13 @@ for register in _bh1745.registers:
                         ).upper()
                 locals()[name] = key
 
+
+"""
+Approximate compensation for the spectral response performance curves
+"""
+_channel_compensation = (2.2, 1.0, 1.8, 10.0)
+_enable_channel_compensation = True
+
 # Public API methods
 def setup():
     try:
@@ -114,21 +121,87 @@ def setup():
     _bh1745.INTERRUPT.set_latch(1)
 
 def set_measurement_time_ms(time_ms):
+    """Set the measurement time in milliseconds.
+
+    :param time_ms: The time in milliseconds: 160, 320, 640, 1280, 2560, 5120
+
+    """
+
     _bh1745.MODE_CONTROL1.set_measurement_time_ms(time_ms)
 
 def set_adc_gain_x(gain_x):
+    """Set the ADC gain multiplier.
+    
+    :param gain_x: Must be either 1, 2 or 16
+
+    """
+
     _bh1745.MODE_CONTROL2.set_adc_gain_x(gain_x)
 
 def set_leds(state):
+    """Toggle the onboard LEDs.
+    
+    :param state: Either 1 for on, or 0 for off
+    
+    """
+
     _bh1745.INTERRUPT.set_enable(1 if state else 0)
 
-def get_raw():
+def set_channel_compensation(r, g, b, c):
+    """Set the channel compensation scale factors.
+    
+    :param r: multiplier for red channel
+    :param g: multiplier for green channel
+    :param b: multiplier for blue channel
+    :param c: multiplier for clear channel
+
+    If you intend to measure a particular class of objects, say a set of matching wooden blocks with similar reflectivity and paint finish
+    you should calibrate the channel compensation until you see colour values that broadly represent the colour of the objects you're testing.
+
+    The default values were derived by testing a set of 5 Red, Green, Blue, Yellow and Orange wooden blocks.
+
+    These scale factors are applied in `get_rgbc_raw` right after the raw values are read from the sensor.
+
+    """
+
+    global _channel_compensation
+    _channel_compensation = (r, g, b, c)
+
+def enable_white_balance(enable):
+    """Enable scale compensation for the channels.
+
+    :param enable: True to enable, False to disable
+
+    See: `set_channel_compensation` for details.
+
+    """
+
+    global _enable_channel_compensation
+    _enable_channel_compensation = True if enable else False
+
+def get_rgbc_raw():
+    """Return the raw Red, Green, Blue and Clear readings"""
+
     with _bh1745.COLOUR_DATA as COLOUR_DATA:
         r, g, b, c = COLOUR_DATA.get_red(), COLOUR_DATA.get_green(), COLOUR_DATA.get_blue(), COLOUR_DATA.get_clear()
+
+    if _enable_channel_compensation:
+        cr, cg, cb, cc = _channel_compensation
+        r, g, b, c = r*cr, g*cg, b*cb, c*cc
+
     return (r, g, b, c)
 
-def get_rgb_capped():
-    r, g, b, c = get_raw()
+def get_rgb_clamped():
+    """Return an RGB value scaled against max(r, g, b)
+
+    This will clamp/saturate one of the colour channels, providing a clearer idea
+    of what primary colour an object is most likely to be.
+
+    However the resulting colour reading will not be accurate for other purposes.
+
+    """
+
+    r, g, b, c = get_rgbc_raw()
 
     div = max(r, g, b)
 
@@ -138,11 +211,13 @@ def get_rgb_capped():
 
     return (0, 0, 0)
 
-def get_rgb_clear():
-    r, g, b, c = get_raw()
+def get_rgb_scaled():
+    """Return an RGB value scaled against the clear channel"""
+
+    r, g, b, c = get_rgbc_raw()
 
     if c > 0:
-        r, g, b = [int((x / float(c)) * 255) for x in (r, g, b)]
+        r, g, b = [min(255,int((x / float(c)) * 255)) for x in (r, g, b)]
         return (r, g, b)
 
     return (0, 0, 0)
