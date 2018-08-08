@@ -1,5 +1,7 @@
 import time
-import bh1745
+from h1745 import BH1745
+
+bh1745 = BH1745()
 
 bh1745.setup()
 bh1745.set_leds(1)

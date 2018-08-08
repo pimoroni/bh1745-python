@@ -1,6 +1,9 @@
 import time
-from bh1745 import _bh1745 as l
+from bh1745 import BH1745
 import RPi.GPIO as GPIO
+
+dev = BH1745()
+l = dev._bh1745
 
 #GPIO.setmode(GPIO.BCM)
 #GPIO.setup(4, GPIO.OUT)
@@ -8,7 +11,7 @@ import RPi.GPIO as GPIO
 try:
     l.SYSTEM_CONTROL.get_part_id()
 except IOError:
-    addr = l.bh1745.next_address()
+    addr = l.next_address()
     print("Trying alternate i2c address: 0x{:02x}".format(addr))
     l.SYSTEM_CONTROL.get_part_id()
 
