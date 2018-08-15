@@ -27,7 +27,7 @@ try:
 except ImportError:
     from distutils.core import setup
 
-classifiers = ['Development Status :: 4 - Beta',
+classifiers = ['Development Status :: 5 - Production/Stable',
                'Operating System :: POSIX :: Linux',
                'License :: OSI Approved :: MIT License',
                'Intended Audience :: Developers',
@@ -39,7 +39,7 @@ classifiers = ['Development Status :: 4 - Beta',
 
 setup(
     name            = 'bh1745',
-    version         = '0.0.2',
+    version         = '0.0.3',
     author          = 'Philip Howard',
     author_email    = 'phil@pimoroni.com',
     description     = """Python library for the BH1745 colour sensor""",

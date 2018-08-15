@@ -1,3 +1,10 @@
+0.0.3
+-----
+
+* Automagically call setup if not called by user
+* Allow setup() to try alternate i2c addresses
+* Added .ready() to determine if sensor is setup
+
 0.0.2
 -----
 
