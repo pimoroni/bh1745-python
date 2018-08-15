@@ -102,6 +102,11 @@ class BH1745:
         return self._is_setup
 
     def setup(self, i2c_addr=None):
+        """Setup the bh1745 sensor
+
+        :param i2c_addr: Optional i2c_addr to switch to
+
+        """
         if self._is_setup: return True
 
         if i2c_addr is not None:
