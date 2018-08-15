@@ -1,3 +1,5 @@
+import time
+
 from i2cdevice import Device, Register, BitField
 from i2cdevice.adapter import LookupAdapter, U16ByteSwapAdapter
 
@@ -5,6 +7,7 @@ class BH1745:
     def __init__(self, i2c_addr=0x38, i2c_dev=None):
         self._i2c_addr = i2c_addr
         self._i2c_dev = i2c_dev
+        self._is_setup = False
         # Device definition
         self._bh1745 = Device([0x38, 0x39], i2c_dev=self._i2c_dev, bit_width=8, registers=(
             # Part ID should be 0b001011 or 0x0B
@@ -94,6 +97,8 @@ class BH1745:
 
     # Public API methods
     def setup(self):
+        if self._is_setup: return True
+
         try:
             self._bh1745.SYSTEM_CONTROL.get_part_id()
         except IOError:
@@ -101,6 +106,8 @@ class BH1745:
 
         if self._bh1745.SYSTEM_CONTROL.get_part_id() != 0b001011 or self._bh1745.MANUFACTURER.get_id() != 0xE0:
             raise RuntimeError("BH1745 not found: Manufacturer or Part ID mismatch!")
+
+        self._is_setup = True
 
         self._bh1745.SYSTEM_CONTROL.set_sw_reset(1)
 
@@ -123,6 +130,8 @@ class BH1745:
 
         self._bh1745.INTERRUPT.set_latch(1)
 
+        time.sleep(0.320)
+
     def set_measurement_time_ms(self, time_ms):
         """Set the measurement time in milliseconds.
 
@@ -130,6 +139,7 @@ class BH1745:
 
         """
 
+        self.setup()
         self._bh1745.MODE_CONTROL1.set_measurement_time_ms(time_ms)
 
     def set_adc_gain_x(self, gain_x):
@@ -139,6 +149,7 @@ class BH1745:
 
         """
 
+        self.setup()
         self._bh1745.MODE_CONTROL2.set_adc_gain_x(gain_x)
 
     def set_leds(self, state):
@@ -148,6 +159,7 @@ class BH1745:
         
         """
 
+        self.setup()
         self._bh1745.INTERRUPT.set_enable(1 if state else 0)
 
     def set_channel_compensation(self, r, g, b, c):
@@ -183,6 +195,7 @@ class BH1745:
     def get_rgbc_raw(self):
         """Return the raw Red, Green, Blue and Clear readings"""
 
+        self.setup()
         with self._bh1745.COLOUR_DATA as COLOUR_DATA:
             r, g, b, c = COLOUR_DATA.get_red(), COLOUR_DATA.get_green(), COLOUR_DATA.get_blue(), COLOUR_DATA.get_clear()
 
