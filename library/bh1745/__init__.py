@@ -3,13 +3,15 @@ import time
 from i2cdevice import Device, Register, BitField
 from i2cdevice.adapter import LookupAdapter, U16ByteSwapAdapter
 
+I2C_ADDRESSES = [0x38, 0x39]
+
 class BH1745:
     def __init__(self, i2c_addr=0x38, i2c_dev=None):
         self._i2c_addr = i2c_addr
         self._i2c_dev = i2c_dev
         self._is_setup = False
         # Device definition
-        self._bh1745 = Device([0x38, 0x39], i2c_dev=self._i2c_dev, bit_width=8, registers=(
+        self._bh1745 = Device(I2C_ADDRESSES, i2c_dev=self._i2c_dev, bit_width=8, registers=(
             # Part ID should be 0b001011 or 0x0B
             Register('SYSTEM_CONTROL', 0x40, fields=(
                 BitField('sw_reset',  0b10000000),
@@ -96,8 +98,14 @@ class BH1745:
         self._enable_channel_compensation = True
 
     # Public API methods
-    def setup(self):
+    def ready(self):
+        return self._is_setup
+
+    def setup(self, i2c_addr=None):
         if self._is_setup: return True
+
+        if i2c_addr is not None:
+            self._bh1745.select_address(i2c_addr)
 
         try:
             self._bh1745.SYSTEM_CONTROL.get_part_id()
