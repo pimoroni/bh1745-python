@@ -4,9 +4,15 @@ from i2cdevice import Device, Register, BitField
 from i2cdevice.adapter import LookupAdapter, U16ByteSwapAdapter
 
 I2C_ADDRESSES = [0x38, 0x39]
+BH1745_RESET_TIMEOUT_SEC = 2
+
+
+class BH1745TimeoutError(Exception):
+    pass
+
 
 class BH1745:
-    def __init__(self, i2c_addr=0x38, i2c_dev=None):
+    def __init__(self, i2c_addr=0x38, i2c_dev=None, reset_timeout=BH1745_RESET_TIMEOUT_SEC):
         self._i2c_addr = i2c_addr
         self._i2c_dev = i2c_dev
         self._is_setup = False
@@ -14,19 +20,27 @@ class BH1745:
         self._bh1745 = Device(I2C_ADDRESSES, i2c_dev=self._i2c_dev, bit_width=8, registers=(
             # Part ID should be 0b001011 or 0x0B
             Register('SYSTEM_CONTROL', 0x40, fields=(
-                BitField('sw_reset',  0b10000000),
+                BitField('sw_reset', 0b10000000),
                 BitField('int_reset', 0b01000000),
-                BitField('part_id',   0b00111111, read_only=True)
+                BitField('part_id', 0b00111111, read_only=True)
             )),
 
             Register('MODE_CONTROL1', 0x41, fields=(
-                BitField('measurement_time_ms', 0b00000111, adapter=LookupAdapter({160: 0b000, 320: 0b001, 640: 0b010, 1280: 0b011, 2560: 0b100, 5120: 0b101})),
+                BitField('measurement_time_ms', 0b00000111, adapter=LookupAdapter({
+                    160: 0b000,
+                    320: 0b001,
+                    640: 0b010,
+                    1280: 0b011,
+                    2560: 0b100,
+                    5120: 0b101
+                })),
             )),
 
             Register('MODE_CONTROL2', 0x42, fields=(
-                BitField('valid',      0b10000000, read_only=True),
-                BitField('rgbc_en',    0b00010000),
-                BitField('adc_gain_x', 0b00000011, adapter=LookupAdapter({1: 0b00, 2: 0b01, 16: 0b10}))
+                BitField('valid', 0b10000000, read_only=True),
+                BitField('rgbc_en', 0b00010000),
+                BitField('adc_gain_x', 0b00000011, adapter=LookupAdapter({
+                    1: 0b00, 2: 0b01, 16: 0b10}))
             )),
 
             Register('MODE_CONTROL3', 0x43, fields=(
@@ -34,9 +48,9 @@ class BH1745:
             )),
 
             Register('COLOUR_DATA', 0x50, fields=(
-                BitField('red',   0xFFFF000000000000, adapter=U16ByteSwapAdapter()),
+                BitField('red', 0xFFFF000000000000, adapter=U16ByteSwapAdapter()),
                 BitField('green', 0x0000FFFF00000000, adapter=U16ByteSwapAdapter()),
-                BitField('blue',  0x00000000FFFF0000, adapter=U16ByteSwapAdapter()),
+                BitField('blue', 0x00000000FFFF0000, adapter=U16ByteSwapAdapter()),
                 BitField('clear', 0x000000000000FFFF, adapter=U16ByteSwapAdapter())
             ), bit_width=64, read_only=True),
 
@@ -46,8 +60,13 @@ class BH1745:
 
             Register('INTERRUPT', 0x60, fields=(
                 BitField('status', 0b10000000, read_only=True),
-                BitField('latch',  0b00010000, adapter=LookupAdapter({0:1, 1:0})),
-                BitField('source', 0b00001100, read_only=True, adapter=LookupAdapter({'red': 0b00, 'green': 0b01, 'blue': 0b10, 'clear': 0b11})),
+                BitField('latch', 0b00010000, adapter=LookupAdapter({0: 1, 1: 0})),
+                BitField('source', 0b00001100, read_only=True, adapter=LookupAdapter({
+                    'red': 0b00,
+                    'green': 0b01,
+                    'blue': 0b10,
+                    'clear': 0b11
+                })),
                 BitField('enable', 0b00000001)
             )),
 
@@ -56,19 +75,24 @@ class BH1745:
             # 10: Interrupt status is updated if 4 consecutive threshold judgements are the same
             # 11: Blah blah ditto above except for 8 consecutive judgements
             Register('PERSISTENCE', 0x61, fields=(
-                BitField('mode', 0b00000011, adapter=LookupAdapter({'toggle': 0b00, 'update': 0b01, 'update_on_4': 0b10, 'update_on_8': 0b11})),
+                BitField('mode', 0b00000011, adapter=LookupAdapter({
+                    'toggle': 0b00,
+                    'update': 0b01,
+                    'update_on_4': 0b10,
+                    'update_on_8': 0b11
+                })),
             )),
 
             # High threshold defaults to 0xFFFF
             # Low threshold defaults to 0x0000
             Register('THRESHOLD', 0x62, fields=(
                 BitField('high', 0xFFFF0000, adapter=U16ByteSwapAdapter()),
-                BitField('low',  0x0000FFFF, adapter=U16ByteSwapAdapter())
+                BitField('low', 0x0000FFFF, adapter=U16ByteSwapAdapter())
             ), bit_width=32),
 
             # Default MANUFACTURER ID is 0xE0h
             Register('MANUFACTURER', 0x92, fields=(
-                BitField('id', 0xFF),    
+                BitField('id', 0xFF),
             ), read_only=True, volatile=False)
         ))
 
@@ -82,14 +106,12 @@ class BH1745:
                 field = register.fields[field]
                 if isinstance(field.adapter, LookupAdapter):
                     for key in field.adapter.lookup_table:
-                        value = field.adapter.lookup_table[key]
                         name = "BH1745_{register}_{field}_{key}".format(
-                                    register=register.name,
-                                    field=field.name,
-                                    key=key
-                                ).upper()
+                            register=register.name,
+                            field=field.name,
+                            key=key
+                        ).upper()
                         globals()[name] = key
-
 
         """
         Approximate compensation for the spectral response performance curves
@@ -101,13 +123,14 @@ class BH1745:
     def ready(self):
         return self._is_setup
 
-    def setup(self, i2c_addr=None):
+    def setup(self, i2c_addr=None, timeout=BH1745_RESET_TIMEOUT_SEC):
         """Setup the bh1745 sensor
 
         :param i2c_addr: Optional i2c_addr to switch to
 
         """
-        if self._is_setup: return True
+        if self._is_setup:
+            return True
 
         if i2c_addr is not None:
             self._bh1745.select_address(i2c_addr)
@@ -124,15 +147,18 @@ class BH1745:
 
         self._bh1745.SYSTEM_CONTROL.set_sw_reset(1)
 
-        while True:
+        t_start = time.time()
+        while time.time() - t_start < timeout:
             reset = self._bh1745.SYSTEM_CONTROL.get_sw_reset()
             if not reset:
                 break
-            time.sleep(0.1)
+            time.sleep(0.01)
+        if reset:
+            raise BH1745TimeoutError("Timeout waiting for BH1745 to reset.")
 
         self._bh1745.SYSTEM_CONTROL.set_int_reset(0)
-        self._bh1745.MODE_CONTROL1.set_measurement_time_ms(BH1745_MODE_CONTROL1_MEASUREMENT_TIME_MS_320)
-        self._bh1745.MODE_CONTROL2.set_adc_gain_x(BH1745_MODE_CONTROL2_ADC_GAIN_X_1)
+        self._bh1745.MODE_CONTROL1.set_measurement_time_ms(320)
+        self._bh1745.MODE_CONTROL2.set_adc_gain_x(1)
         self._bh1745.MODE_CONTROL2.set_rgbc_en(1)
         self._bh1745.MODE_CONTROL3.set_on(1)
 
@@ -157,7 +183,7 @@ class BH1745:
 
     def set_adc_gain_x(self, gain_x):
         """Set the ADC gain multiplier.
-        
+
         :param gain_x: Must be either 1, 2 or 16
 
         """
@@ -167,9 +193,9 @@ class BH1745:
 
     def set_leds(self, state):
         """Toggle the onboard LEDs.
-        
+
         :param state: Either 1 for on, or 0 for off
-        
+
         """
 
         self.setup()
@@ -177,7 +203,7 @@ class BH1745:
 
     def set_channel_compensation(self, r, g, b, c):
         """Set the channel compensation scale factors.
-        
+
         :param r: multiplier for red channel
         :param g: multiplier for green channel
         :param b: multiplier for blue channel
@@ -214,7 +240,7 @@ class BH1745:
 
         if self._enable_channel_compensation:
             cr, cg, cb, cc = self._channel_compensation
-            r, g, b, c = r*cr, g*cg, b*cb, c*cc
+            r, g, b, c = r * cr, g * cg, b * cb, c * cc
 
         return (r, g, b, c)
 
@@ -244,8 +270,7 @@ class BH1745:
         r, g, b, c = self.get_rgbc_raw()
 
         if c > 0:
-            r, g, b = [min(255,int((x / float(c)) * 255)) for x in (r, g, b)]
+            r, g, b = [min(255, int((x / float(c)) * 255)) for x in (r, g, b)]
             return (r, g, b)
 
         return (0, 0, 0)
-

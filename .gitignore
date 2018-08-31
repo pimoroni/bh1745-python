@@ -1,4 +1,3 @@
-*.swp
 build/
 _build/
 *.o
@@ -6,6 +5,7 @@ _build/
 *.a
 *.py[cod]
 *.egg-info
+*.swp
 dist/
 __pycache__
 .DS_Store
@@ -16,4 +16,7 @@ __pycache__
 *.orig.*
 packaging/*tar.xz
 library/debian/
-library/blinkt
+.coverage
+.pytest_cache
+.tox
+.vscode

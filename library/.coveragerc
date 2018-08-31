@@ -1,0 +1,4 @@
+[run]
+source = bh1745
+omit =
+    .tox/*

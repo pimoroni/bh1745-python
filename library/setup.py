@@ -38,16 +38,16 @@ classifiers = ['Development Status :: 5 - Production/Stable',
                'Topic :: System :: Hardware']
 
 setup(
-    name            = 'bh1745',
-    version         = '0.0.3',
-    author          = 'Philip Howard',
-    author_email    = 'phil@pimoroni.com',
-    description     = """Python library for the BH1745 colour sensor""",
-    long_description= open('README.rst').read() + open('CHANGELOG.txt').read(),
-    license         = 'MIT',
-    keywords        = 'Raspberry Pi',
-    url             = 'http://www.pimoroni.com',
-    classifiers     = classifiers,
-    packages        = ['bh1745'],
-    install_requires= [ 'i2cdevice>=0.0.4' ]
+    name='bh1745',
+    version='0.0.3',
+    author='Philip Howard',
+    author_email='phil@pimoroni.com',
+    description="""Python library for the BH1745 colour sensor""",
+    long_description=open('README.rst').read() + '\n' + open('CHANGELOG.txt').read(),
+    license='MIT',
+    keywords='Raspberry Pi',
+    url='http://www.pimoroni.com',
+    classifiers=classifiers,
+    packages=['bh1745'],
+    install_requires=['i2cdevice>=0.0.4']
 )
