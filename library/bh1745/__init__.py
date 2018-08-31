@@ -12,7 +12,7 @@ class BH1745TimeoutError(Exception):
 
 
 class BH1745:
-    def __init__(self, i2c_addr=0x38, i2c_dev=None, reset_timeout=BH1745_RESET_TIMEOUT_SEC):
+    def __init__(self, i2c_addr=0x38, i2c_dev=None):
         self._i2c_addr = i2c_addr
         self._i2c_dev = i2c_dev
         self._is_setup = False
