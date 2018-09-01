@@ -1,3 +1,4 @@
+"""Library for the BH1745 colour sensor."""
 import time
 
 from i2cdevice import Device, Register, BitField
@@ -7,12 +8,20 @@ I2C_ADDRESSES = [0x38, 0x39]
 BH1745_RESET_TIMEOUT_SEC = 2
 
 
-class BH1745TimeoutError(Exception):
+class BH1745TimeoutError(Exception):  # noqa D101
     pass
 
 
 class BH1745:
+    """BH1745 colour sensor."""
+
     def __init__(self, i2c_addr=0x38, i2c_dev=None):
+        """Initialise sensor.
+
+        :param i2c_addr: i2c address of sensor
+        :param i2c_dev: SMBus-compatible instance
+
+        """
         self._i2c_addr = i2c_addr
         self._i2c_dev = i2c_dev
         self._is_setup = False
@@ -106,7 +115,7 @@ class BH1745:
                 field = register.fields[field]
                 if isinstance(field.adapter, LookupAdapter):
                     for key in field.adapter.lookup_table:
-                        name = "BH1745_{register}_{field}_{key}".format(
+                        name = 'BH1745_{register}_{field}_{key}'.format(
                             register=register.name,
                             field=field.name,
                             key=key
@@ -121,10 +130,11 @@ class BH1745:
 
     # Public API methods
     def ready(self):
+        """Return true if setup has been successful."""
         return self._is_setup
 
     def setup(self, i2c_addr=None, timeout=BH1745_RESET_TIMEOUT_SEC):
-        """Setup the bh1745 sensor
+        """Set up the bh1745 sensor.
 
         :param i2c_addr: Optional i2c_addr to switch to
 
@@ -138,10 +148,10 @@ class BH1745:
         try:
             self._bh1745.SYSTEM_CONTROL.get_part_id()
         except IOError:
-            raise RuntimeError("BH1745 not found: IO error attempting to query device!")
+            raise RuntimeError('BH1745 not found: IO error attempting to query device!')
 
         if self._bh1745.SYSTEM_CONTROL.get_part_id() != 0b001011 or self._bh1745.MANUFACTURER.get_id() != 0xE0:
-            raise RuntimeError("BH1745 not found: Manufacturer or Part ID mismatch!")
+            raise RuntimeError('BH1745 not found: Manufacturer or Part ID mismatch!')
 
         self._is_setup = True
 
@@ -154,7 +164,7 @@ class BH1745:
                 break
             time.sleep(0.01)
         if reset:
-            raise BH1745TimeoutError("Timeout waiting for BH1745 to reset.")
+            raise BH1745TimeoutError('Timeout waiting for BH1745 to reset.')
 
         self._bh1745.SYSTEM_CONTROL.set_int_reset(0)
         self._bh1745.MODE_CONTROL1.set_measurement_time_ms(320)
@@ -177,7 +187,6 @@ class BH1745:
         :param time_ms: The time in milliseconds: 160, 320, 640, 1280, 2560, 5120
 
         """
-
         self.setup()
         self._bh1745.MODE_CONTROL1.set_measurement_time_ms(time_ms)
 
@@ -187,7 +196,6 @@ class BH1745:
         :param gain_x: Must be either 1, 2 or 16
 
         """
-
         self.setup()
         self._bh1745.MODE_CONTROL2.set_adc_gain_x(gain_x)
 
@@ -197,7 +205,6 @@ class BH1745:
         :param state: Either 1 for on, or 0 for off
 
         """
-
         self.setup()
         self._bh1745.INTERRUPT.set_enable(1 if state else 0)
 
@@ -217,7 +224,6 @@ class BH1745:
         These scale factors are applied in `get_rgbc_raw` right after the raw values are read from the sensor.
 
         """
-
         self._channel_compensation = (r, g, b, c)
 
     def enable_white_balance(self, enable):
@@ -228,12 +234,10 @@ class BH1745:
         See: `set_channel_compensation` for details.
 
         """
-
         self._enable_channel_compensation = True if enable else False
 
     def get_rgbc_raw(self):
-        """Return the raw Red, Green, Blue and Clear readings"""
-
+        """Return the raw Red, Green, Blue and Clear readings."""
         self.setup()
         with self._bh1745.COLOUR_DATA as COLOUR_DATA:
             r, g, b, c = COLOUR_DATA.get_red(), COLOUR_DATA.get_green(), COLOUR_DATA.get_blue(), COLOUR_DATA.get_clear()
@@ -245,7 +249,7 @@ class BH1745:
         return (r, g, b, c)
 
     def get_rgb_clamped(self):
-        """Return an RGB value scaled against max(r, g, b)
+        """Return an RGB value scaled against max(r, g, b).
 
         This will clamp/saturate one of the colour channels, providing a clearer idea
         of what primary colour an object is most likely to be.
@@ -253,7 +257,6 @@ class BH1745:
         However the resulting colour reading will not be accurate for other purposes.
 
         """
-
         r, g, b, c = self.get_rgbc_raw()
 
         div = max(r, g, b)
@@ -265,8 +268,7 @@ class BH1745:
         return (0, 0, 0)
 
     def get_rgb_scaled(self):
-        """Return an RGB value scaled against the clear channel"""
-
+        """Return an RGB value scaled against the clear channel."""
         r, g, b, c = self.get_rgbc_raw()
 
         if c > 0:

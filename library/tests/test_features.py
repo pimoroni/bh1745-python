@@ -1,3 +1,4 @@
+# noqa D100
 import sys
 import mock
 
@@ -13,6 +14,7 @@ def _setup():
 
 
 def test_get_rgbc_raw():
+    """Test retriving raw RGBC data against mocked values."""
     from tools import BH1745_COLOUR_DATA
     _setup()
     bh1745.setup(timeout=0.01)
@@ -27,6 +29,7 @@ def test_get_rgbc_raw():
 
 
 def test_set_measurement_time_ms():
+    """Test setting measurement time to valid and snapped value."""
     _setup()
 
     bh1745.set_measurement_time_ms(320)
