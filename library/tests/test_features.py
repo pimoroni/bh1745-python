@@ -13,6 +13,19 @@ def _setup():
     bh1745 = BH1745()
 
 
+def test_set_adc_gain_x():
+    """Test setting adc gain amount."""
+    _setup()
+    bh1745.setup(timeout=0.01)
+
+    bh1745.set_adc_gain_x(1)
+    assert bh1745._bh1745.MODE_CONTROL2.get_adc_gain_x() == 1
+
+    # Should snap to 16x
+    bh1745.set_adc_gain_x(15)
+    assert bh1745._bh1745.MODE_CONTROL2.get_adc_gain_x() == 16
+
+
 def test_get_rgbc_raw():
     """Test retriving raw RGBC data against mocked values."""
     from tools import BH1745_COLOUR_DATA

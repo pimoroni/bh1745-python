@@ -5,6 +5,18 @@ from i2cdevice import MockSMBus
 BH1745_COLOUR_DATA = (666, 777, 888, 999)
 
 
+class SMBusFakeDeviceIOError(MockSMBus):
+    """Mock a BH1745 that returns an IOError in all cases."""
+
+    def write_i2c_block_data(self, i2c_address, register, values):
+        """Raise an IO Error for any write attempt."""
+        raise IOError('IOError: Fake Device Not Found')
+
+    def read_i2c_block_data(self, i2c_address, register, length):
+        """Raise an IO Error for any read attempt."""
+        raise IOError('IOError: Fake Device Not Found')
+
+
 class SMBusFakeDevice(MockSMBus):
     """Mock a BH1745 with fake register data."""
 
