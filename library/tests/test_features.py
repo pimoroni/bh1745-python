@@ -41,6 +41,44 @@ def test_get_rgbc_raw():
     assert colour_data == BH1745_COLOUR_DATA
 
 
+def test_get_rgbc_clamped():
+    """Test retriving raw RGBC data against mocked values."""
+    from tools import BH1745_COLOUR_DATA
+    _setup()
+    bh1745.setup(timeout=0.01)
+
+    # White balance will change the BH1745_COLOUR_DATA
+    # and make our test fail. Disable it in this case.
+    bh1745.enable_white_balance(False)
+
+    colour_data = bh1745.get_rgb_clamped()
+
+    r, g, b, c = BH1745_COLOUR_DATA
+
+    scale = max(r, g, b)
+
+    scaled_data = [int((x / float(scale)) * 255) for x in BH1745_COLOUR_DATA[0:3]]
+
+    assert list(colour_data) == scaled_data
+
+
+def test_get_rgbc_scaled():
+    """Test retriving raw RGBC data against mocked values."""
+    from tools import BH1745_COLOUR_DATA
+    _setup()
+    bh1745.setup(timeout=0.01)
+
+    # White balance will change the BH1745_COLOUR_DATA
+    # and make our test fail. Disable it in this case.
+    bh1745.enable_white_balance(False)
+
+    colour_data = bh1745.get_rgb_scaled()
+
+    scaled_data = [int((x / float(BH1745_COLOUR_DATA[3])) * 255) for x in BH1745_COLOUR_DATA[0:3]]
+
+    assert list(colour_data) == scaled_data
+
+
 def test_set_measurement_time_ms():
     """Test setting measurement time to valid and snapped value."""
     _setup()

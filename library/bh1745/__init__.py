@@ -142,6 +142,9 @@ class BH1745:
         if self._is_setup:
             return True
 
+        if timeout <= 0:
+            raise ValueError('Device timeout period must be greater than 0')
+
         if i2c_addr is not None:
             self._bh1745.select_address(i2c_addr)
 
@@ -158,12 +161,16 @@ class BH1745:
         self._bh1745.SYSTEM_CONTROL.set_sw_reset(1)
 
         t_start = time.time()
+
+        pending_reset = True
+
         while time.time() - t_start < timeout:
-            reset = self._bh1745.SYSTEM_CONTROL.get_sw_reset()
-            if not reset:
+            pending_reset = self._bh1745.SYSTEM_CONTROL.get_sw_reset()
+            if not pending_reset:
                 break
             time.sleep(0.01)
-        if reset:
+
+        if pending_reset:
             raise BH1745TimeoutError('Timeout waiting for BH1745 to reset.')
 
         self._bh1745.SYSTEM_CONTROL.set_int_reset(0)

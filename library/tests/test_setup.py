@@ -25,6 +25,23 @@ def test_setup_not_present():
         bh1745.setup()
 
 
+def test_setup_mock_invalid_timeout():
+    """Test an attempt to set up the BH1745 with a reset timeout."""
+    from tools import SMBusFakeDevice
+    smbus = mock.Mock()
+    smbus.SMBus = SMBusFakeDevice
+    sys.modules['smbus'] = smbus
+    from bh1745 import BH1745
+
+    with pytest.raises(ValueError):
+        bh1745 = BH1745()
+        bh1745.setup(timeout=0)
+
+    with pytest.raises(ValueError):
+        bh1745 = BH1745()
+        bh1745.setup(timeout=-1)
+
+
 def test_setup_mock_timeout():
     """Test an attempt to set up the BH1745 with a reset timeout."""
     from tools import SMBusFakeDevice
