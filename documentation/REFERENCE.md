@@ -2,7 +2,7 @@
 
 `setup()`
 
-Set up the sensor with initial values and configuration. Should be called before using nay other methods, but is called automatically for you.
+Set up the sensor with initial values and configuration. Should be called before using any other methods, but is called automatically for you.
 
 `ready()`
 
