@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2016 Pimoroni.
+Copyright (c) 2016 Pimoroni
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -47,6 +47,7 @@ setup(
     license='MIT',
     keywords='Raspberry Pi',
     url='http://www.pimoroni.com',
+    project_urls={'GitHub': 'https://www.github.com/pimoroni/bh1745-python'},
     classifiers=classifiers,
     packages=['bh1745'],
     install_requires=['i2cdevice>=0.0.4']
