@@ -52,7 +52,7 @@ class BH1745:
                     1: 0b00, 2: 0b01, 16: 0b10}))
             )),
 
-            Register('MODE_CONTROL3', 0x43, fields=(
+            Register('MODE_CONTROL3', 0x44, fields=(
                 BitField('on', 0b11111111, adapter=LookupAdapter({True: 2, False: 0})),
             )),
 
