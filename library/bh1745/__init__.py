@@ -4,6 +4,9 @@ import time
 from i2cdevice import Device, Register, BitField
 from i2cdevice.adapter import LookupAdapter, U16ByteSwapAdapter
 
+
+__version__ = '0.0.4'
+
 I2C_ADDRESSES = [0x38, 0x39]
 BH1745_RESET_TIMEOUT_SEC = 2
 
@@ -149,42 +152,36 @@ class BH1745:
             self._bh1745.select_address(i2c_addr)
 
         try:
-            self._bh1745.SYSTEM_CONTROL.get_part_id()
+            self._bh1745.get('SYSTEM_CONTROL')
         except IOError:
             raise RuntimeError('BH1745 not found: IO error attempting to query device!')
 
-        if self._bh1745.SYSTEM_CONTROL.get_part_id() != 0b001011 or self._bh1745.MANUFACTURER.get_id() != 0xE0:
+        if self._bh1745.get('SYSTEM_CONTROL').part_id != 0b001011 or self._bh1745.get('MANUFACTURER').id != 0xE0:
             raise RuntimeError('BH1745 not found: Manufacturer or Part ID mismatch!')
 
         self._is_setup = True
 
-        self._bh1745.SYSTEM_CONTROL.set_sw_reset(1)
+        self._bh1745.set('SYSTEM_CONTROL', sw_reset=1)
 
         t_start = time.time()
 
         pending_reset = True
 
         while time.time() - t_start < timeout:
-            pending_reset = self._bh1745.SYSTEM_CONTROL.get_sw_reset()
-            if not pending_reset:
+            if not self._bh1745.get('SYSTEM_CONTROL').sw_reset:
+                pending_reset = False
                 break
             time.sleep(0.01)
 
         if pending_reset:
             raise BH1745TimeoutError('Timeout waiting for BH1745 to reset.')
 
-        self._bh1745.SYSTEM_CONTROL.set_int_reset(0)
-        self._bh1745.MODE_CONTROL1.set_measurement_time_ms(320)
-        self._bh1745.MODE_CONTROL2.set_adc_gain_x(1)
-        self._bh1745.MODE_CONTROL2.set_rgbc_en(1)
-        self._bh1745.MODE_CONTROL3.set_on(1)
-
-        with self._bh1745.THRESHOLD as THRESHOLD:
-            THRESHOLD.set_low(0xFFFF)
-            THRESHOLD.set_high(0x0000)
-            THRESHOLD.write()
-
-        self._bh1745.INTERRUPT.set_latch(1)
+        self._bh1745.set('SYSTEM_CONTROL', int_reset=0)
+        self._bh1745.set('MODE_CONTROL1', measurement_time_ms=320)
+        self._bh1745.set('MODE_CONTROL2', adc_gain_x=1, rgbc_en=1)
+        self._bh1745.set('MODE_CONTROL3', on=1)
+        self._bh1745.set('THRESHOLD', low=0xFFFF, high=0x0000)
+        self._bh1745.set('INTERRUPT', latch=1)
 
         time.sleep(0.320)
 
@@ -195,7 +192,7 @@ class BH1745:
 
         """
         self.setup()
-        self._bh1745.MODE_CONTROL1.set_measurement_time_ms(time_ms)
+        self._bh1745.set('MODE_CONTROL1', measurement_time_ms=time_ms)
 
     def set_adc_gain_x(self, gain_x):
         """Set the ADC gain multiplier.
@@ -204,7 +201,7 @@ class BH1745:
 
         """
         self.setup()
-        self._bh1745.MODE_CONTROL2.set_adc_gain_x(gain_x)
+        self._bh1745.set('MODE_CONTROL2', adc_gain_x=gain_x)
 
     def set_leds(self, state):
         """Toggle the onboard LEDs.
@@ -213,7 +210,7 @@ class BH1745:
 
         """
         self.setup()
-        self._bh1745.INTERRUPT.set_enable(1 if state else 0)
+        self._bh1745.set('INTERRUPT', enable=1 if state else 0)
 
     def set_channel_compensation(self, r, g, b, c):
         """Set the channel compensation scale factors.
@@ -246,8 +243,8 @@ class BH1745:
     def get_rgbc_raw(self):
         """Return the raw Red, Green, Blue and Clear readings."""
         self.setup()
-        with self._bh1745.COLOUR_DATA as COLOUR_DATA:
-            r, g, b, c = COLOUR_DATA.get_red(), COLOUR_DATA.get_green(), COLOUR_DATA.get_blue(), COLOUR_DATA.get_clear()
+        colour_data = self._bh1745.get('COLOUR_DATA')
+        r, g, b, c = colour_data.red, colour_data.green, colour_data.blue, colour_data.clear
 
         if self._enable_channel_compensation:
             cr, cg, cb, cc = self._channel_compensation
