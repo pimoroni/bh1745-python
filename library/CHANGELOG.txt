@@ -1,3 +1,8 @@
+0.0.4
+-----
+
+* Migrate to new i2cdevice API
+
 0.0.3
 -----
 

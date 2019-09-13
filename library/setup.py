@@ -39,7 +39,7 @@ classifiers = ['Development Status :: 5 - Production/Stable',
 
 setup(
     name='bh1745',
-    version='0.0.3',
+    version='0.0.4',
     author='Philip Howard',
     author_email='phil@pimoroni.com',
     description="""Python library for the BH1745 colour sensor""",
@@ -50,5 +50,5 @@ setup(
     project_urls={'GitHub': 'https://www.github.com/pimoroni/bh1745-python'},
     classifiers=classifiers,
     packages=['bh1745'],
-    install_requires=['i2cdevice>=0.0.4']
+    install_requires=['i2cdevice>=0.0.6']
 )
