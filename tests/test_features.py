@@ -28,7 +28,7 @@ def test_set_adc_gain_x():
 
 
 def test_get_rgbc_raw():
-    """Test retriving raw RGBC data against mocked values."""
+    """Test retrieving raw RGBC data against mocked values."""
     from tools import BH1745_COLOUR_DATA
     _setup()
     bh1745.setup(timeout=0.01)
@@ -43,7 +43,7 @@ def test_get_rgbc_raw():
 
 
 def test_get_rgbc_clamped():
-    """Test retriving raw RGBC data against mocked values."""
+    """Test retrieving raw RGBC data against mocked values."""
     from tools import BH1745_COLOUR_DATA
     _setup()
     bh1745.setup(timeout=0.01)
@@ -64,7 +64,7 @@ def test_get_rgbc_clamped():
 
 
 def test_get_rgbc_scaled():
-    """Test retriving raw RGBC data against mocked values."""
+    """Test retrieving raw RGBC data against mocked values."""
     from tools import BH1745_COLOUR_DATA
     _setup()
     bh1745.setup(timeout=0.01)
