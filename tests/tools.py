@@ -11,11 +11,11 @@ class SMBusFakeDeviceIOError(MockSMBus):
 
     def write_i2c_block_data(self, i2c_address, register, values):
         """Raise an IO Error for any write attempt."""
-        raise IOError('IOError: Fake Device Not Found')
+        raise IOError("IOError: Fake Device Not Found")
 
     def read_i2c_block_data(self, i2c_address, register, length):
         """Raise an IO Error for any read attempt."""
-        raise IOError('IOError: Fake Device Not Found')
+        raise IOError("IOError: Fake Device Not Found")
 
 
 class SMBusFakeDevice(MockSMBus):
@@ -31,10 +31,10 @@ class SMBusFakeDevice(MockSMBus):
         self.regs[0x40] = 0b001011     # Fake part number
         self.regs[0x92] = 0xE0         # Fake manufacturer ID
 
-        colour_data = struct.pack('<HHHH', *BH1745_COLOUR_DATA)
+        colour_data = struct.pack("<HHHH", *BH1745_COLOUR_DATA)
         colour_data = [ord(x) if isinstance(x, str) else x for x in colour_data]
 
-        self.regs[0x50:0x50 + 8] = list(colour_data)
+        self.regs[0x50 : 0x50 + 8] = list(colour_data)
 
 
 class SMBusFakeDeviceNoTimeout(SMBusFakeDevice):
@@ -57,7 +57,7 @@ class SMBusFakeDeviceNoTimeout(SMBusFakeDevice):
     def read_i2c_block_data(self, i2c_address, register, length):
         """Read up to length bytes from i2c device."""
         if register == 0x40:
-            values = self.regs[register:register + length]
+            values = self.regs[register : register + length]
             values[0] &= 0b01111111  # Mask out the reset status bit
             return values
         return SMBusFakeDevice.read_i2c_block_data(self, i2c_address, register, length)
