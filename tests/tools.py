@@ -1,5 +1,6 @@
 """Test tools for the BH1745 colour sensor."""
 import struct
+
 from i2cdevice import MockSMBus
 
 BH1745_COLOUR_DATA = (666, 777, 888, 999)

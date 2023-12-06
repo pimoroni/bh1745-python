@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import time
+
 from bh1745 import BH1745
 
 bh1745_a = BH1745(0x38)  # Stock BH1745 breakout or jumper soldered

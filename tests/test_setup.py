@@ -1,5 +1,6 @@
 # noqa D100
 import sys
+
 import mock
 import pytest
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import time
+
 from bh1745 import BH1745
 
 bh1745 = BH1745()
