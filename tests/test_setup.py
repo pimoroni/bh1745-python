@@ -7,7 +7,7 @@ import pytest
 
 def test_setup_id_mismatch():
     """Test an attempt to set up the BH1745 with invalid sensor present."""
-    sys.modules["smbus"] = mock.MagicMock()
+    sys.modules["smbus2"] = mock.MagicMock()
     from bh1745 import BH1745
 
     bh1745 = BH1745()
@@ -23,7 +23,7 @@ def test_setup_not_present():
 
     smbus = mock.Mock()
     smbus.SMBus = SMBusFakeDeviceIOError
-    sys.modules["smbus"] = smbus
+    sys.modules["smbus2"] = smbus
     bh1745 = BH1745()
     with pytest.raises(RuntimeError):
         bh1745.setup()
@@ -37,7 +37,7 @@ def test_setup_mock_invalid_timeout():
 
     smbus = mock.Mock()
     smbus.SMBus = SMBusFakeDevice
-    sys.modules["smbus"] = smbus
+    sys.modules["smbus2"] = smbus
 
     with pytest.raises(ValueError):
         bh1745 = BH1745()
@@ -56,7 +56,7 @@ def test_setup_mock_timeout():
 
     smbus = mock.Mock()
     smbus.SMBus = SMBusFakeDevice
-    sys.modules["smbus"] = smbus
+    sys.modules["smbus2"] = smbus
     bh1745 = BH1745()
     with pytest.raises(BH1745TimeoutError):
         bh1745.setup(timeout=0.01)
@@ -70,7 +70,7 @@ def test_setup_mock_present():
 
     smbus = mock.Mock()
     smbus.SMBus = SMBusFakeDeviceNoTimeout
-    sys.modules["smbus"] = smbus
+    sys.modules["smbus2"] = smbus
     bh1745 = BH1745()
     bh1745.setup(timeout=0.01)
 
@@ -83,7 +83,7 @@ def test_i2c_addr():
 
     smbus = mock.Mock()
     smbus.SMBus = SMBusFakeDeviceNoTimeout
-    sys.modules["smbus"] = smbus
+    sys.modules["smbus2"] = smbus
 
     with pytest.raises(ValueError):
         bh1745 = BH1745(i2c_addr=0x40)
@@ -106,7 +106,7 @@ def test_is_setup():
 
     smbus = mock.Mock()
     smbus.SMBus = SMBusFakeDeviceNoTimeout
-    sys.modules["smbus"] = smbus
+    sys.modules["smbus2"] = smbus
 
     bh1745 = BH1745()
     assert bh1745.ready() is False

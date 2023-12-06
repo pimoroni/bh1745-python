@@ -12,7 +12,7 @@ def _setup():
 
     smbus = mock.Mock()
     smbus.SMBus = SMBusFakeDeviceNoTimeout
-    sys.modules["smbus"] = smbus
+    sys.modules["smbus2"] = smbus
     bh1745 = BH1745()
 
 
