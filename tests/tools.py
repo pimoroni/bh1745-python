@@ -32,7 +32,7 @@ class SMBusFakeDevice(MockSMBus):
         self.regs[0x92] = 0xE0         # Fake manufacturer ID
 
         colour_data = struct.pack('<HHHH', *BH1745_COLOUR_DATA)
-        colour_data = [ord(x) if type(x) is str else x for x in colour_data]
+        colour_data = [ord(x) if isinstance(x, str) else x for x in colour_data]
 
         self.regs[0x50:0x50 + 8] = list(colour_data)
 
