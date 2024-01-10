@@ -1,15 +1,18 @@
 # noqa D100
 import sys
+
 import mock
 
 
 def _setup():
     global bh1745
     from tools import SMBusFakeDeviceNoTimeout
+
+    from bh1745 import BH1745
+
     smbus = mock.Mock()
     smbus.SMBus = SMBusFakeDeviceNoTimeout
-    sys.modules['smbus'] = smbus
-    from bh1745 import BH1745
+    sys.modules["smbus2"] = smbus
     bh1745 = BH1745()
 
 
@@ -27,8 +30,9 @@ def test_set_adc_gain_x():
 
 
 def test_get_rgbc_raw():
-    """Test retriving raw RGBC data against mocked values."""
+    """Test retrieving raw RGBC data against mocked values."""
     from tools import BH1745_COLOUR_DATA
+
     _setup()
     bh1745.setup(timeout=0.01)
 
@@ -42,8 +46,9 @@ def test_get_rgbc_raw():
 
 
 def test_get_rgbc_clamped():
-    """Test retriving raw RGBC data against mocked values."""
+    """Test retrieving raw RGBC data against mocked values."""
     from tools import BH1745_COLOUR_DATA
+
     _setup()
     bh1745.setup(timeout=0.01)
 
@@ -63,8 +68,9 @@ def test_get_rgbc_clamped():
 
 
 def test_get_rgbc_scaled():
-    """Test retriving raw RGBC data against mocked values."""
+    """Test retrieving raw RGBC data against mocked values."""
     from tools import BH1745_COLOUR_DATA
+
     _setup()
     bh1745.setup(timeout=0.01)
 

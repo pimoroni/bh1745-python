@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import time
+
 from bh1745 import BH1745
 
 bh1745_a = BH1745(0x38)  # Stock BH1745 breakout or jumper soldered
@@ -14,9 +15,9 @@ bh1745_b.set_leds(1)
 try:
     while True:
         r, g, b = bh1745_a.get_rgb_scaled()
-        print('A: #{:02x}{:02x}{:02x}'.format(r, g, b))
+        print(f"A: #{r:02x}{g:02x}{b:02x}")
         r, g, b = bh1745_b.get_rgb_scaled()
-        print('B: #{:02x}{:02x}{:02x}'.format(r, g, b))
+        print(f"B: #{r:02x}{g:02x}{b:02x}")
         time.sleep(1.0)
 
 except KeyboardInterrupt:
