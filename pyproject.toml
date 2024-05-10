@@ -112,4 +112,6 @@ ignore = [
 [tool.pimoroni]
 apt_packages = []
 configtxt = []
-commands = []
+commands = [
+    "sudo raspi-config nonint do_i2c 0"
+]
