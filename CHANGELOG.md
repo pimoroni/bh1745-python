@@ -1,3 +1,9 @@
+1.0.0
+-----
+
+* Repackage to hatch/pyproject.toml
+* Require Python >= 3.7 (drop 2.x support)
+
 0.0.4
 -----
 
