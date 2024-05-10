@@ -4,7 +4,7 @@ import time
 from i2cdevice import BitField, Device, Register
 from i2cdevice.adapter import LookupAdapter, U16ByteSwapAdapter
 
-__version__ = "0.0.4"
+__version__ = "1.0.0"
 
 I2C_ADDRESSES = [0x38, 0x39]
 BH1745_RESET_TIMEOUT_SEC = 2
